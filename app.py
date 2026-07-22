@@ -7,7 +7,7 @@ load_dotenv()
 #creates the Flask application instance or a website
 app = Flask(__name__)
 
-db = mysql.connector.connect(
+db = mysql.connect(
     host=os.getenv("MYSQL_HOST"),
     port=int(os.getenv("MYSQL_PORT")),
     user=os.getenv("MYSQL_USER"),
