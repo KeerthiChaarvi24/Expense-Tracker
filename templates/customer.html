@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>💰 Expense Tracker Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>💰 Expense Tracker</h1>
+    <!-- takes customer from flask where customer = (id,name,gmail,phone) so customer[1] is name -->
+    <h2>Welcome, {{ customer[1] }} 👋</h2>
+
+    <hr> <!-- simply draws a horizontal line to separate sections of the page -->
+
+    <!-- ================= DASHBOARD ================= -->
+
+    <div class="dashboard">
+
+        <div class="card">
+            <h3>💸 Total Spending</h3>
+            <h2>₹{{ total }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>📅 Today's Spending</h3>
+            <h2>₹{{ today_total }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>📈 This Month</h3>
+            <h2>₹{{ monthly_total }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>🧾 Transactions</h3>
+            <h2>{{ transaction_count }}</h2>
+        </div>
+
+        <div class="card">
+            <h3>🔥 Highest Category</h3>
+            <h2>{{ highest_category }}</h2>
+            <p>₹{{ highest_amount }}</p>
+        </div>
+
+    </div>
+
+    <hr>
+
+    <hr>
+
+    <h2>💰 Monthly Budget</h2>
+
+    <form action="/set_budget/{{ customer[0] }}" method="POST">
+
+        <input
+            type="number"
+            name="budget"
+            placeholder="Enter Monthly Budget"
+            required
+        >
+
+        <button>
+
+            Save Budget
+
+        </button>
+
+    </form>
+
+    <br>
+
+    <div class="card">
+
+    <h3>💰 Monthly Budget</h3>
+
+    <h2>₹{{ budget }}</h2>
+
+    <p><strong>Spent:</strong> ₹{{ monthly_total }}</p>
+
+    <p><strong>Remaining:</strong> ₹{{ remaining }}</p>
+
+    </div>
+
+    <br>
+
+    <div class="progress-bar">
+
+    <div
+        class="progress-fill"
+        style="width: {{ progress }}%;">
+    </div>
+
+    </div>
+
+<p>
+
+    {{ "%.1f"|format(progress) }}% Used
+
+</p>
+
+    <p>
+
+    {{ "%.1f"|format(progress) }}%
+
+    Used
+
+    </p>
+
+    {% if warning %}
+
+    <div class="warning-box">
+
+    ⚠ Budget Exceeded!
+
+    </div>
+
+    {% endif %}
+
+    <h3>👤 Customer Information</h3>
+    <!-- the strong tag is used to make the text bold, and the double curly braces are used to insert dynamic data from the Flask backend into the HTML template. -->
+    <p><strong>Name:</strong> {{ customer[1] }}</p>
+    <p><strong>Email:</strong> {{ customer[2] }}</p>
+    <p><strong>Phone:</strong> {{ customer[3] }}</p>
+
+    <hr>
+
+    <h3>➕ Add Expense</h3>
+
+    <form action="/add_expense/{{ customer[0] }}" method="POST">
+
+        <label>Amount</label>
+
+        <input
+            type="number"
+            name="amount"
+            placeholder="Enter Amount"
+            required
+        >
+
+        <label>Category</label>
+
+        <select name="category" required>
+
+            <option value="">Select Category</option>
+
+            <option>Food</option>
+            <option>Travel</option>
+            <option>Shopping</option>
+            <option>Entertainment</option>
+            <option>Medical</option>
+            <option>Rent / Housing</option>
+            <option>Bills</option>
+            <option>Education</option>
+            <option>Fitness</option>
+            <option>Personal Care</option>
+            <option>Subscriptions</option>
+            <option>Pets</option>
+            <option>Work</option>
+            <option>Gifts</option>
+            <option>Other</option>
+
+        </select>
+
+        <label>Description</label>
+
+        <input
+            type="text"
+            name="description"
+            placeholder="Example: Starbucks Coffee"
+            required
+        >
+
+        <button type="submit">
+            Add Expense
+        </button>
+
+    </form>
+
+    <hr>
+
+    <h2>📊 Spending Analytics</h2>
+
+    <div class="chart-box">
+        <!-- creates an empty canvas for pie chart -->
+        <canvas id="expenseChart"></canvas>
+
+    </div>
+
+    <br>
+
+    <h2>📈 Spending Trend</h2>
+
+    <div class="chart-box">
+        <!-- canvas is an empty drawing board where the chart will be rendered -->
+        <canvas id="lineChart"></canvas>
+
+    </div>
+
+    <hr>
+    <hr>
+
+    <h3>🔍 Search & Filter</h3>
+
+    <form method="GET" action="/customer/{{ customer[0] }}">
+
+        <input
+            type="text"
+            name="search"
+            placeholder="Search category or description..."
+            value="{{ search }}"
+        >
+
+        <select name="filter">
+
+            <option value="all"
+                {% if filter_by=="all" %}selected{% endif %}>
+                All Expenses
+            </option>
+
+            <option value="today"
+                {% if filter_by=="today" %}selected{% endif %}>
+                Today
+            </option>
+
+            <option value="month"
+                {% if filter_by=="month" %}selected{% endif %}>
+                This Month
+            </option>
+
+            <option value="year"
+                {% if filter_by=="year" %}selected{% endif %}>
+                This Year
+            </option>
+
+        </select>
+
+        <select name="sort">
+
+            <option value="newest"
+                {% if sort_by=="newest" %}selected{% endif %}>
+                Newest First
+            </option>
+
+            <option value="oldest"
+                {% if sort_by=="oldest" %}selected{% endif %}>
+                Oldest First
+            </option>
+
+            <option value="highest"
+                {% if sort_by=="highest" %}selected{% endif %}>
+                Highest Amount
+            </option>
+
+            <option value="lowest"
+                {% if sort_by=="lowest" %}selected{% endif %}>
+                Lowest Amount
+            </option>
+
+        </select>
+
+        <button type="submit">
+            Search
+        </button>
+
+    </form>
+
+    <br>
+
+    <h3>📋 Expense History</h3>
+
+    {% if expenses %}
+
+    <table>
+        <!-- table headings for the expense history table -->
+        <thead>
+
+        <tr>
+            <!-- table header -->
+            <th>Amount</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Date</th>
+            <th>Time</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+        <!-- expenses is the python list of tuples where each tuple is (id,customer_id,amount,category,description,date,time) so expense[2] is amount -->
+        {% for expense in expenses %}
+
+        <tr>
+
+            <td>₹{{ expense[2] }}</td>
+
+            <td>{{ expense[3] }}</td>
+
+            <td>{{ expense[4] }}</td>
+
+            <td>{{ expense[5] }}</td>
+
+            <td>{{ expense[6] }}</td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+        <p>No expenses added yet.</p>
+
+    {% endif %}
+
+</div>
+<!-- downloads the chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const pieLabels = {{ pie_labels | tojson }};
+const pieValues = {{ pie_values | tojson }};
+const lineLabels = {{ line_labels | tojson }};
+const lineValues = {{ line_values | tojson }};
+</script>
+<!-- loads the charts.js file from the static folder -->
+<script src="{{ url_for('static', filename='charts.js') }}"></script>
+</body>
+
+</html>
