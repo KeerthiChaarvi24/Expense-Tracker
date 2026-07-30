@@ -198,6 +198,7 @@ def customer_dashboard(customer_id):
 
         budget = 0
 
+    monthly_total = float(monthly_total or 0)
     remaining = budget - monthly_total
 
     if budget > 0:
